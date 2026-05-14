@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bakery App — Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #0f0e0c;
+    --surface:  #1a1917;
+    --border:   #2e2c29;
+    --accent:   #e8a84c;
+    --accent2:  #5cc98e;
+    --danger:   #e05c5c;
+    --text:     #e8e4dc;
+    --muted:    #7a7670;
+    --mono:     'DM Mono', monospace;
+    --sans:     'DM Sans', sans-serif;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Login ── */
+  #login-screen {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+
+  .login-box {
+    width: 100%;
+    max-width: 380px;
+  }
+
+  .login-box .logo {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 2.5rem;
+  }
+
+  .login-box h1 {
+    font-size: 28px;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    line-height: 1.2;
+  }
+
+  .login-box p {
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 2rem;
+  }
+
+  input[type="text"], input[type="password"] {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 14px;
+    padding: 12px 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    margin-bottom: 12px;
+  }
+
+  input:focus { border-color: var(--accent); }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 20px;
+    border-radius: 8px;
+    border: none;
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+
+  .btn:active { transform: scale(0.98); }
+  .btn:hover  { opacity: 0.88; }
+
+  .btn-primary { background: var(--accent); color: #1a1208; width: 100%; justify-content: center; }
+  .btn-success { background: var(--accent2); color: #0a1a12; }
+  .btn-danger  { background: var(--danger); color: #fff; }
+  .btn-ghost   { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+  .btn-sm      { padding: 6px 12px; font-size: 12px; }
+
+  .err { color: var(--danger); font-size: 13px; margin-top: 8px; font-family: var(--mono); }
+
+  /* ── App shell ── */
+  #app { display: none; flex-direction: column; min-height: 100vh; }
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 28px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .header-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .brand-icon {
+    width: 34px; height: 34px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+
+  .brand-name {
+    font-weight: 600;
+    font-size: 15px;
+  }
+
+  .brand-sub {
+    font-size: 11px;
+    font-family: var(--mono);
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .header-actions { display: flex; gap: 10px; align-items: center; }
+
+  main { flex: 1; padding: 28px; max-width: 980px; margin: 0 auto; width: 100%; }
+
+  /* ── Stats bar ── */
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    font-family: var(--mono);
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+  }
+
+  .stat-value {
+    font-size: 28px;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  .stat-value.green  { color: var(--accent2); }
+  .stat-value.amber  { color: var(--accent); }
+  .stat-value.red    { color: var(--danger); }
+  .stat-value.white  { color: var(--text); }
+
+  /* ── Section header ── */
+  .section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .section-title {
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  /* ── Users table ── */
+  .table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 28px;
+  }
+
+  table { width: 100%; border-collapse: collapse; }
+
+  thead th {
+    text-align: left;
+    font-size: 11px;
+    font-family: var(--mono);
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(255,255,255,0.02);
+  }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+  }
+
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover      { background: rgba(255,255,255,0.03); }
+
+  td {
+    padding: 13px 16px;
+    font-size: 14px;
+    vertical-align: middle;
+  }
+
+  .email-cell {
+    font-family: var(--mono);
+    font-size: 13px;
+  }
+
+  /* ── Badges ── */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+    font-family: var(--mono);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .badge-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+  }
+
+  .badge.active   { background: rgba(92,201,142,0.15); color: var(--accent2); }
+  .badge.active   .badge-dot { background: var(--accent2); }
+  .badge.inactive { background: rgba(224,92,92,0.12);  color: var(--danger); }
+  .badge.inactive .badge-dot { background: var(--danger); }
+  .badge.trial    { background: rgba(232,168,76,0.15); color: var(--accent); }
+  .badge.premium  { background: rgba(255,255,255,0.08); color: var(--text); }
+  .badge.expired  { background: rgba(224,92,92,0.12);  color: var(--danger); }
+
+  .actions-cell { display: flex; gap: 8px; align-items: center; }
+
+  /* ── Modal ── */
+  .modal-bg {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 20px;
+  }
+
+  .modal-bg.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    width: 100%;
+    max-width: 440px;
+  }
+
+  .modal h2 { font-size: 18px; margin-bottom: 6px; }
+  .modal p  { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+
+  .form-row { margin-bottom: 14px; }
+  .form-label { font-size: 12px; color: var(--muted); font-family: var(--mono); margin-bottom: 6px; display: block; text-transform: uppercase; letter-spacing: 0.08em; }
+
+  select {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    padding: 11px 14px;
+    outline: none;
+  }
+
+  .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+  .modal-actions .btn { flex: 1; justify-content: center; }
+
+  /* ── Toast ── */
+  #toast {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 18px;
+    font-size: 14px;
+    font-family: var(--mono);
+    opacity: 0;
+    transform: translateY(8px);
+    transition: all 0.25s;
+    z-index: 200;
+    max-width: 320px;
+  }
+
+  #toast.show { opacity: 1; transform: translateY(0); }
+  #toast.ok   { border-color: var(--accent2); color: var(--accent2); }
+  #toast.err  { border-color: var(--danger);  color: var(--danger); }
+
+  .spin { display: inline-block; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .empty-state {
+    text-align: center;
+    padding: 48px 20px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  @media (max-width: 700px) {
+    .stats-bar { grid-template-columns: repeat(2, 1fr); }
+    main { padding: 16px; }
+    header { padding: 14px 16px; }
+    td, th { padding: 10px 12px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── CONFIG — set your Apps Script URL here ── -->
+<script>
+  const API_URL     = 'https://script.google.com/macros/s/AKfycby_oHW1kMqknPt3ex-uJvOfoS-PcWKRiRdz3YLfuNkxVxMRlwd3rBbj6gJ716QuKPyLBQ/exec';
+  const ADMIN_PASS  = ''; // will be filled at login
+</script>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="logo">🥐 Bakery Manager</div>
+    <h1>Admin Panel</h1>
+    <p>Sign in to manage user subscriptions and access.</p>
+    <input type="password" id="admin-pw" placeholder="Admin password" onkeydown="if(event.key==='Enter') doAdminLogin()">
+    <button class="btn btn-primary" onclick="doAdminLogin()">Sign in</button>
+    <div id="login-err" class="err"></div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+  <header>
+    <div class="header-brand">
+      <div class="brand-icon">🥐</div>
+      <div>
+        <div class="brand-name">Bakery Manager</div>
+        <div class="brand-sub">Admin Panel</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-ghost btn-sm" onclick="loadUsers()">↻ Refresh</button>
+      <button class="btn btn-success btn-sm" onclick="openCreateModal()">+ New User</button>
+      <button class="btn btn-ghost btn-sm" onclick="logout()">Sign out</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Stats -->
+    <div class="stats-bar">
+      <div class="stat-card">
+        <div class="stat-label">Total users</div>
+        <div class="stat-value white" id="stat-total">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Active</div>
+        <div class="stat-value green" id="stat-active">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">On trial</div>
+        <div class="stat-value amber" id="stat-trial">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Inactive</div>
+        <div class="stat-value red" id="stat-inactive">—</div>
+      </div>
+    </div>
+
+    <!-- Users table -->
+    <div class="section-head">
+      <div class="section-title">Users</div>
+      <input type="text" id="search" placeholder="Search by email…"
+        style="width:220px;margin:0;padding:8px 12px;font-size:13px"
+        oninput="filterTable(this.value)">
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Email</th>
+            <th>Status</th>
+            <th>Plan</th>
+            <th>Trial end</th>
+            <th>Created</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="users-body">
+          <tr><td colspan="6" class="empty-state"><span class="spin">⟳</span> Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<!-- Create user modal -->
+<div class="modal-bg" id="create-modal">
+  <div class="modal">
+    <h2>Create new user</h2>
+    <p>A 14-day trial starts immediately. You can upgrade to premium anytime.</p>
+    <div class="form-row">
+      <label class="form-label">Email</label>
+      <input type="text" id="new-email" placeholder="owner@bakery.com">
+    </div>
+    <div class="form-row">
+      <label class="form-label">Password</label>
+      <input type="password" id="new-pass" placeholder="Temporary password">
+    </div>
+    <div class="form-row">
+      <label class="form-label">Plan</label>
+      <select id="new-plan">
+        <option value="trial">Trial (14 days)</option>
+        <option value="premium">Premium</option>
+      </select>
+    </div>
+    <div id="create-err" class="err"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('create-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitCreateUser()">Create user</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit user modal -->
+<div class="modal-bg" id="edit-modal">
+  <div class="modal">
+    <h2>Edit user</h2>
+    <p id="edit-email-label" style="font-family:var(--mono);font-size:13px;color:var(--text);margin-bottom:16px"></p>
+    <div class="form-row">
+      <label class="form-label">Status</label>
+      <select id="edit-status">
+        <option value="active">Active</option>
+        <option value="inactive">Inactive (blocked)</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Plan</label>
+      <select id="edit-plan">
+        <option value="trial">Trial</option>
+        <option value="premium">Premium</option>
+      </select>
+    </div>
+    <div id="edit-err" class="err"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('edit-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitEditUser()">Save changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+  let adminPassword = '';
+  let allUsers      = [];
+  let editingEmail  = '';
+
+  // ── API helper ──────────────────────────────────────────────
+  async function api(action, payload = {}) {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action, payload: { admin_password: adminPassword, ...payload } }),
+    });
+    return res.json();
+  }
+
+  // ── Auth ─────────────────────────────────────────────────────
+  async function doAdminLogin() {
+    const pw = document.getElementById('admin-pw').value.trim();
+    if (!pw) return;
+    document.getElementById('login-err').textContent = '';
+
+    try {
+      const res = await api('adminLogin', { password: pw });
+      if (res.success) {
+        adminPassword = pw;
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('app').style.display = 'flex';
+        loadUsers();
+      } else {
+        document.getElementById('login-err').textContent = res.error || 'Wrong password';
+      }
+    } catch {
+      document.getElementById('login-err').textContent = 'Cannot reach the API. Check your URL.';
+    }
+  }
+
+  function logout() {
+    adminPassword = '';
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('admin-pw').value = '';
+  }
+
+  // ── Load users ───────────────────────────────────────────────
+  async function loadUsers() {
+    const tbody = document.getElementById('users-body');
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-state"><span class="spin">⟳</span> Loading…</td></tr>';
+
+    const res = await api('getUsers');
+    if (!res.success) { toast(res.error, 'err'); return; }
+
+    allUsers = res.data || [];
+    renderUsers(allUsers);
+    updateStats(allUsers);
+  }
+
+  function updateStats(users) {
+    const today    = new Date().toISOString().split('T')[0];
+    const active   = users.filter(u => u.status === 'active').length;
+    const inactive = users.filter(u => u.status === 'inactive').length;
+    const trial    = users.filter(u => u.plan === 'trial' && u.trial_end >= today && u.status === 'active').length;
+
+    document.getElementById('stat-total').textContent   = users.length;
+    document.getElementById('stat-active').textContent  = active;
+    document.getElementById('stat-inactive').textContent = inactive;
+    document.getElementById('stat-trial').textContent   = trial;
+  }
+
+  function getPlanBadge(user) {
+    const today = new Date().toISOString().split('T')[0];
+    if (user.plan === 'premium') return '<span class="badge premium">★ Premium</span>';
+    if (user.trial_end < today) return '<span class="badge expired">Trial expired</span>';
+    const days = Math.ceil((new Date(user.trial_end) - new Date()) / (1000*60*60*24));
+    return `<span class="badge trial">Trial · ${days}d left</span>`;
+  }
+
+  function renderUsers(users) {
+    const tbody = document.getElementById('users-body');
+    if (!users.length) {
+      tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No users yet. Create one above.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = users.map(u => `
+      <tr>
+        <td class="email-cell">${u.email}</td>
+        <td>
+          <span class="badge ${u.status}">
+            <span class="badge-dot"></span>${u.status}
+          </span>
+        </td>
+        <td>${getPlanBadge(u)}</td>
+        <td style="font-family:var(--mono);font-size:12px;color:var(--muted)">
+          ${u.trial_end || '—'}
+        </td>
+        <td style="font-family:var(--mono);font-size:12px;color:var(--muted)">
+          ${u.created_at ? u.created_at.split('T')[0] : '—'}
+        </td>
+        <td class="actions-cell">
+          <button class="btn btn-ghost btn-sm" onclick="openEditModal('${u.email}', '${u.status}', '${u.plan}')">Edit</button>
+          ${u.status === 'active'
+            ? `<button class="btn btn-danger btn-sm" onclick="quickToggle('${u.email}','inactive')">Deactivate</button>`
+            : `<button class="btn btn-success btn-sm" onclick="quickToggle('${u.email}','active')">Activate</button>`
+          }
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function filterTable(q) {
+    const filtered = allUsers.filter(u => u.email.toLowerCase().includes(q.toLowerCase()));
+    renderUsers(filtered);
+  }
+
+  // ── Quick toggle ─────────────────────────────────────────────
+  async function quickToggle(email, status) {
+    const res = await api('updateUserStatus', { email, status });
+    if (res.success) { toast(`${email} → ${status}`, 'ok'); loadUsers(); }
+    else toast(res.error, 'err');
+  }
+
+  // ── Create user modal ────────────────────────────────────────
+  function openCreateModal() {
+    document.getElementById('new-email').value = '';
+    document.getElementById('new-pass').value  = '';
+    document.getElementById('create-err').textContent = '';
+    openModal('create-modal');
+  }
+
+  async function submitCreateUser() {
+    const email = document.getElementById('new-email').value.trim();
+    const pass  = document.getElementById('new-pass').value.trim();
+    const plan  = document.getElementById('new-plan').value;
+    document.getElementById('create-err').textContent = '';
+
+    if (!email || !pass) { document.getElementById('create-err').textContent = 'Email and password required'; return; }
+
+    const res = await api('createUser', { email, password: pass, plan });
+    if (res.success) {
+      toast('User created — trial ends ' + (res.trial_end || 'N/A'), 'ok');
+      closeModal('create-modal');
+      loadUsers();
+    } else {
+      document.getElementById('create-err').textContent = res.error;
+    }
+  }
+
+  // ── Edit user modal ──────────────────────────────────────────
+  function openEditModal(email, status, plan) {
+    editingEmail = email;
+    document.getElementById('edit-email-label').textContent = email;
+    document.getElementById('edit-status').value = status;
+    document.getElementById('edit-plan').value   = plan;
+    document.getElementById('edit-err').textContent = '';
+    openModal('edit-modal');
+  }
+
+  async function submitEditUser() {
+    const status = document.getElementById('edit-status').value;
+    const plan   = document.getElementById('edit-plan').value;
+    document.getElementById('edit-err').textContent = '';
+
+    const res = await api('updateUserStatus', { email: editingEmail, status, plan });
+    if (res.success) {
+      toast('User updated', 'ok');
+      closeModal('edit-modal');
+      loadUsers();
+    } else {
+      document.getElementById('edit-err').textContent = res.error;
+    }
+  }
+
+  // ── Modal helpers ────────────────────────────────────────────
+  function openModal(id)  { document.getElementById(id).classList.add('open'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+  document.querySelectorAll('.modal-bg').forEach(bg => {
+    bg.addEventListener('click', e => { if (e.target === bg) bg.classList.remove('open'); });
+  });
+
+  // ── Toast ────────────────────────────────────────────────────
+  let toastTimer;
+  function toast(msg, type = 'ok') {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.className   = 'show ' + type;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.className = '', 3000);
+  }
+</script>
+</body>
+</html>
